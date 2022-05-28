@@ -31,12 +31,12 @@ new_reg_data.loc[2015] = None
 Accuracy = []  # 存放灰色预测模型精度
 l = ['x1', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x13']
 for i in l:
-    f = GM11(new_reg_data.loc[range(1994, 2014), i].as_matrix())[0]
+    f = GM11(new_reg_data.loc[range(1994, 2014), i].values)[0]  #values将DataFrame转换为矩阵
     new_reg_data.loc[2014, i] = f(len(new_reg_data) - 1)  # 2014年预测结果
     new_reg_data.loc[2015, i] = f(len(new_reg_data))  # 2015年预测结果
     new_reg_data[i] = new_reg_data[i].round(2)  # 保留两位小数
-    C = GM11(new_reg_data.loc[range(1994, 2014), 'x1'].as_matrix())[4]
-    P = GM11(new_reg_data.loc[range(1994, 2014), 'x1'].as_matrix())[5]
+    C = GM11(new_reg_data.loc[range(1994, 2014), 'x1'].values)[4]
+    P = GM11(new_reg_data.loc[range(1994, 2014), 'x1'].values)[5]
     if P>0.95 and C<0.35:
         Accuracy.append('好')
     elif 0.8<P<=0.95 and 0.35<=C<0.5:
@@ -57,8 +57,6 @@ new_reg_data.to_excel(outputfile)  # 结果输出
 # 预测结果展示
 print('预测结果为：\n', new_reg_data.loc[[2014, 2015, '模型精度'], :])
 
-
-
 # 代码 7-4
 
 from sklearn.svm import LinearSVR
@@ -72,13 +70,13 @@ data_train = data.loc[range(1994, 2014)].copy()  # 取2014年前的数据建模
 data_mean = data_train.mean()
 data_std = data_train.std()
 data_train = (data_train - data_mean) / data_std  # 数据标准化
-x_train = data_train[feature].as_matrix()  # 特征数据
-y_train = data_train['y'].as_matrix()  # 标签数据
+x_train = data_train[feature].values  # 特征数据
+y_train = data_train['y'].values  # 标签数据
 linearsvr = LinearSVR(random_state=123)  # 调用LinearSVR()函数
 linearsvr.fit(x_train, y_train)
 
 # 预测2014年和2015年财政收入，并还原结果。
-x = ((data[feature] - data_mean[feature]) / data_std[feature]).as_matrix()
+x = ((data[feature] - data_mean[feature]) / data_std[feature]).values
 data[u'y_pred'] = linearsvr.predict(x) * data_std['y'] + data_mean['y']
 outputfile = '../tmp/new_reg_data_GM11_revenue.xls'
 data.to_excel(outputfile)
